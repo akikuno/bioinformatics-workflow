@@ -1,8 +1,8 @@
 #!/bin/sh
 
-# >>>>>>>>>>>>>>>>>>>>>>>>>
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 # Download mouse genome data: mm10, GRCm38
-# >>>>>>>>>>>>>>>>>>>>>>>>>
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 mkdir -p mouse_genome
 # Whole-genome sequence for STAR mapping
