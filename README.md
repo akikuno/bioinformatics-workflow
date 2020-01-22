@@ -1,9 +1,6 @@
 # NGS-workflow
 
-The latest Anaconda or Miniconda installation is highly recommended.
-
-Anaconda: https://docs.anaconda.com/anaconda/install/
-Miniconda: https://docs.conda.io/projects/conda/en/latest/user-guide/install/
+The latest [Anaconda](https://docs.anaconda.com/anaconda/install/) or [Miniconda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) installation is highly recommended.
 
 ```
 conda update -y -n base conda
