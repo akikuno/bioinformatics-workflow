@@ -11,21 +11,27 @@
 [ -z "$threads" ] && threads=1
 
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-# STAR, kallisto, bowtie2 index
+# STAR, RSEM, kallisto, bowtie2 index
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-mkdir -p mouse_index/STAR mouse_index/kallisto mouse_index/bowtie2
+mkdir -p mouse_index/STAR mouse_index/RSEM mouse_index/kallisto mouse_index/bowtie2
 
 STAR \
 --runMode genomeGenerate \
 --genomeDir mouse_index \
---genomeFastaFiles mouse_genome/Mus_musculus.GRCm38.dna.primary_assembly.fa.gz \
---sjdbGTFfile mouse_genome/Mus_musculus.GRCm38.99.gtf.gz \
+--genomeFastaFiles mouse_genome/Mus_musculus.GRCm38.dna.primary_assembly.fa \
+--sjdbGTFfile mouse_genome/Mus_musculus.GRCm38.99.gtf \
 --runThreadN "$threads"
 
+rsem-prepare-reference \
+--gtf mouse_genome/Mus_musculus.GRCm38.99.gtf \
+--num-threads "$threads" \
+mouse_genome/Mus_musculus.GRCm38.dna.primary_assembly.fa \
+mouse_index/RSEM/index
+
 kallisto index -i mouse_index/kallisto \
-mouse_genome/Mus_musculus.GRCm38.cdna.all.fa.gz
+mouse_genome/Mus_musculus.GRCm38.cdna.all.fa
 
 bowtie2-build \
-mouse_genome/Mus_musculus.GRCm38.dna.primary_assembly.fa.gz \
+mouse_genome/Mus_musculus.GRCm38.dna.primary_assembly.fa \
 mouse_index/bowtie2/index \
 --threads "$threads"
