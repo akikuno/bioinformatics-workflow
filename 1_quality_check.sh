@@ -32,6 +32,38 @@ for file in ./fastq/*; do
     --nogroup -o ./fastqc_report
 done
 
+##----------------------------------------------
+# Multiqc
+##----------------------------------------------
+multiqc .
+
+##----------------------------------------------
+# fastp trimming
+##----------------------------------------------
+
+R1=$(ls ./fastq/*R1.fq.gz)
+R2=$(ls ./fastq/*R2.fq.gz)
+
+num=$(find ./fastq/*R1.fq.gz -type f | awk '{print NR}')
+#awk '{if (NR%2!=0) a++; print a }'
+
+mkdir -p fastq_trim
+
+for i in $(echo $num) ; do
+    fw=$(echo $R1 | cut -d " " -f $i)
+    rv=$(echo $R2 | cut -d " " -f $i)
+    echo $fw
+    
+    out_fw=$(echo ${fw} | sed "s/fastq/fastq_trim/g")
+    out_rv=$(echo ${rv} | sed "s/fastq/fastq_trim/g")
+    report=$(echo ${out_fw} | sed "s/_R1.fq.gz//g")
+    #
+    time fastp -i ${fw} -I ${rv} \
+    -o ${out_fw} -O ${out_rv} \
+    --trim_front1 5 -trim_tail1 1 \
+    -h ${report}.html -j ${report}.json \
+    --thread ${threads}
+done
 
 ##----------------------------------------------
 # STAR mapping
