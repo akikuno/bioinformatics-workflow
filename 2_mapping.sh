@@ -90,17 +90,23 @@ for ijk in 1 2; do
         rv=$(echo ${R2} | cut -d " " -f ${i})
         out_f=$(echo "${fw}" |
             sed -e "s/${fastq}/${bam}/g" -e "s/_R1.fq.gz//g")
-
+        echo "${out_f} is now processing..."
+        #
+        { gzip -dc ${fw} > /tmp/R1.fq & } 2>/dev/null
+        { gzip -dc ${rv} > /tmp/R2.fq & } 2>/dev/null
+        wait 2>/dev/null
         time rsem-calculate-expression \
             -p ${threads} \
             --paired-end \
             --star \
             --output-genome-bam \
-            ${fw} ${rv} \
+            /tmp/R1.fq /tmp/R2.fq \
             mouse_index/RSEM/index \
-            ${bam}
+            ${out_f}
     done
 done
+multiqc .
+
 ##----------------------------------------------
 # BigWig files to visualize by IGV
 ##----------------------------------------------
