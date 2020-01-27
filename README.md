@@ -19,3 +19,8 @@ conda create -y -n ngs_analysis python=3.7 anaconda wget \
     bioconductor-chippeakanno bioconductor-diffbind
 conda activate ngs_analysis
 ```
+
+## From the second time on, activate the environment
+```
+conda activate ngs_analysis
+```
