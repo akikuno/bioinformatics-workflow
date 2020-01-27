@@ -23,5 +23,5 @@ conda create -y -n ngs_analysis python=3.7 anaconda wget \
 ```
 conda activate ngs_analysis
 ```
-From the second time on, you can skip step 1 and 2.
+You can skip step 1 and 2 from the second time on.
 
