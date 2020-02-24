@@ -36,10 +36,10 @@ done
 # fastp trimming
 ##----------------------------------------------
 
-R1=$(ls ./fastq/*R1.fq.gz)
-R2=$(ls ./fastq/*R2.fq.gz)
+R1=$(ls ./fastq/*R1*)
+R2=$(ls ./fastq/*R2*)
 
-num=$(find ./fastq/*R1.fq.gz -type f | awk '{print NR}')
+num=$(find ./fastq/*R1* -type f | awk '{print NR}')
 #awk '{if (NR%2!=0) a++; print a }'
 
 mkdir -p fastq_trim
@@ -51,11 +51,11 @@ for i in $(echo $num) ; do
     
     out_fw=$(echo ${fw} | sed "s/fastq/fastq_trim/g")
     out_rv=$(echo ${rv} | sed "s/fastq/fastq_trim/g")
-    report=$(echo ${out_fw} | sed "s/_R1.fq.gz//g")
+    report=$(echo ${out_fw} | sed "s/_R1*//g")
     #
     time fastp -i ${fw} -I ${rv} \
     -o ${out_fw} -O ${out_rv} \
-    --trim_front1 5 -trim_tail1 1 \
+    -f 5 -t 1 \
     -h ${report}.html -j ${report}.json \
     --thread ${threads}
 done
