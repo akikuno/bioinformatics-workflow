@@ -19,7 +19,7 @@ mkdir -p mouse_index/STAR
 
 STAR \
 --runMode genomeGenerate \
---genomeDir mouse_index \
+--genomeDir mouse_index/STAR \
 --genomeFastaFiles mouse_genome/Mus_musculus.GRCm38.dna.primary_assembly.fa \
 --sjdbGTFfile mouse_genome/Mus_musculus.GRCm38.99.gtf \
 --runThreadN "$threads"
@@ -28,9 +28,9 @@ STAR \
 # STAR mapping
 ##----------------------------------------------
 
-R1=$(ls ./fastq/*R1.fq.gz)
-R2=$(ls ./fastq/*R2.fq.gz)
-num=$(find ./fastq/*R1.fq.gz -type f | awk '{print NR}')
+R1=$(ls ./fastq/*R1*.gz)
+R2=$(ls ./fastq/*R2*.gz)
+num=$(find ./fastq/*R1*.gz -type f | awk '{print NR}')
 
 mkdir -p bam
 
@@ -38,7 +38,7 @@ for i in $(echo $num) ; do
     fw=$(echo $R1 | cut -d " " -f $i)
     rv=$(echo $R2 | cut -d " " -f $i)
     out_f=$(echo "$fw" |
-        sed -e "s/fastq/bam/g" -e "s/_R1.fq.gz//g")
+    sed -e "s/fastq/bam/g" -e "s/_R1*.gz//g")
     
     time STAR --runThreadN "$threads" \
     --genomeDir mouse_index/STAR \
@@ -66,11 +66,11 @@ done
 # Index
 mkdir -p mouse_index/RSEM/index
 rsem-prepare-reference \
-    --star \
-    --gtf mouse_genome/Mus_musculus.GRCm38.99.gtf \
-    --num-threads "$threads" \
-    mouse_genome/Mus_musculus.GRCm38.dna.primary_assembly.fa \
-    mouse_index/RSEM/index
+--star \
+--gtf mouse_genome/Mus_musculus.GRCm38.99.gtf \
+--num-threads "$threads" \
+mouse_genome/Mus_musculus.GRCm38.dna.primary_assembly.fa \
+mouse_index/RSEM/index
 
 # Quantification
 fastqs="fastq fastq_trim"
@@ -81,28 +81,28 @@ for ijk in 1 2; do
     bam=$(echo ${bams} | cut -d " " -f ${ijk})
     fastq=$(echo ${fastqs} | cut -d " " -f ${ijk})
     #
-    R1=$(ls ./${fastq}/*R1.fq.gz)
-    R2=$(ls ./${fastq}/*R2.fq.gz)
-    num=$(find ./${fastq}/*R1.fq.gz -type f | awk '{print NR}')
+    R1=$(ls ./${fastq}/*R1*.gz)
+    R2=$(ls ./${fastq}/*R2*.gz)
+    num=$(find ./${fastq}/*R1*.gz -type f | awk '{print NR}')
     #
     for i in $(echo ${num}) ; do
         fw=$(echo ${R1} | cut -d " " -f ${i})
         rv=$(echo ${R2} | cut -d " " -f ${i})
         out_f=$(echo "${fw}" |
-            sed -e "s/${fastq}/${bam}/g" -e "s/_R1.fq.gz//g")
+        sed -e "s/${fastq}/${bam}/g" -e "s/_R1*.gz//g")
         echo "${out_f} is now processing..."
         #
-        { gzip -dc ${fw} > /tmp/R1.fq & } 2>/dev/null
-        { gzip -dc ${rv} > /tmp/R2.fq & } 2>/dev/null
+        { gzip -dc ${fw} > /tmp/R1* & } 2>/dev/null
+        { gzip -dc ${rv} > /tmp/R2* & } 2>/dev/null
         wait 2>/dev/null
         time rsem-calculate-expression \
-            -p ${threads} \
-            --paired-end \
-            --star \
-            --output-genome-bam \
-            /tmp/R1.fq /tmp/R2.fq \
-            mouse_index/RSEM/index \
-            ${out_f}
+        -p ${threads} \
+        --paired-end \
+        --star \
+        --output-genome-bam \
+        /tmp/R1* /tmp/R2* \
+        mouse_index/RSEM/index \
+        ${out_f}
     done
 done
 multiqc .
