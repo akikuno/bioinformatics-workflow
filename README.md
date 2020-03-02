@@ -11,7 +11,7 @@ conda config --add channels conda-forge
 ## 2. Create environment and install software
 ```
 conda update -y -n base conda
-conda create -y -n ngs_analysis python=3.7 anaconda wget \
+conda create -y -n ngs python=3.7 anaconda wget \
     r-base r-essentials r-tidyverse r-ggpubr \
     fastqc fastp samtools bedtools multiqc \
     star rsem kallisto r-sleuth bioconductor-deseq2 \
@@ -21,7 +21,7 @@ conda create -y -n ngs_analysis python=3.7 anaconda wget \
 
 ## 3. Activate the environment
 ```
-conda activate ngs_analysis
+conda activate ngs
 ```
 You can skip step 1 and 2 from the second time on.
 
