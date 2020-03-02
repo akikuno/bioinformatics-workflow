@@ -48,9 +48,9 @@ for i in $(echo $num) ; do
     fw=$(echo $R1 | cut -d " " -f $i)
     rv=$(echo $R2 | cut -d " " -f $i)
     echo $fw
-    
-    out_fw=$(echo ${fw} | sed "s/fastq/fastq_trim/g")
-    out_rv=$(echo ${rv} | sed "s/fastq/fastq_trim/g")
+    #
+    out_fw=$(echo ${fw} | sed -e "s#.*/#fastq_trim/#g" -e "s/R1/R1_trim/g")
+    out_rv=$(echo ${rv} | sed -e "s#.*/#fastq_trim/#g" -e "s/R2/R2_trim/g")
     report=$(echo ${out_fw} | sed "s/_R1*//g")
     #
     time fastp -i ${fw} -I ${rv} \
@@ -62,7 +62,7 @@ done
 
 ## FASTQC
 mkdir -p ./fastqc_trim_report
-for file in ./fastq_trim/*fq.gz; do
+for file in ./fastq_trim/*.gz; do
     fastqc -t "$threads" "$file" \
     --nogroup -o ./fastqc_trim_report
 done
