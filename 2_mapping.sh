@@ -38,7 +38,7 @@ for i in $(echo $num) ; do
     fw=$(echo $R1 | cut -d " " -f $i)
     rv=$(echo $R2 | cut -d " " -f $i)
     out_f=$(echo "$fw" |
-    sed -e "s/fastq/bam/g" -e "s/_R1*.gz//g")
+    sed -e "s#.*/#bam/#g" -e "s/_R1.*//g")
     
     time STAR --runThreadN "$threads" \
     --genomeDir mouse_index/STAR \
