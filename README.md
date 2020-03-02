@@ -14,7 +14,8 @@ conda update -y -n base conda
 conda create -y -n ngs python=3.7 anaconda wget \
     r-base r-essentials r-tidyverse r-ggpubr \
     fastqc fastp samtools bedtools multiqc \
-    star rsem kallisto r-sleuth bioconductor-deseq2 \
+    star rsem kallisto subread r-sleuth \
+    bioconductor-deseq2 \
     bowtie2 macs2 deeptools homer \
     bioconductor-chippeakanno bioconductor-diffbind
 ```
