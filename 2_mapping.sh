@@ -1,7 +1,8 @@
 #!/bin/sh
 
-
+# ##################################################
 # Define threads
+# ##################################################
 # Linux and similar...
 [ -z "$threads" ] && threads=$(getconf _NPROCESSORS_ONLN 2>/dev/null | awk '{print int($0/2)}')
 # FreeBSD and similar...
@@ -11,62 +12,82 @@
 # Give up...
 [ -z "$threads" ] && threads=1
 
-##----------------------------------------------
+# ##################################################
 # Subread index
-##----------------------------------------------
-mkdir -p mouse_index/subread
-subread-buildindex -o mouse_index/subread/subread \
+# ##################################################
+# --------------------------------------------------
+output_dir="mouse_index/subread"
+# --------------------------------------------------
+mkdir -p ${output_dir}
+subread-buildindex \
+    -o ${output_dir}/subread \
     mouse_genome/Mus_musculus.GRCm38.dna.primary_assembly.fa
 
-##----------------------------------------------
+# ##################################################
 # Subread mapping
-##----------------------------------------------
+# ##################################################
+# --------------------------------------------------
+input_label="trim"
+output_dir="bam_trim"
+# --------------------------------------------------
+mkdir -p ${output_dir}
 
 R1=$(ls ./fastq/*R1*.gz)
 R2=$(ls ./fastq/*R2*.gz)
 num=$(find ./fastq/*R1*.gz -type f | awk '{print NR}')
 
-mkdir -p bam
-
 for i in $(echo $num) ; do
     fw=$(echo $R1 | cut -d " " -f $i)
     rv=$(echo $R2 | cut -d " " -f $i)
     out_f=$(echo "$fw" |
-    sed -e "s#.*/#bam/#g" -e "s/_R1.*//g")
+    sed -e "s#.*/#bam/#g" -e "s/_R1.*/${input_label}/g")
     #
     echo "${out_f} is now processing..."
     subread-align -t 0 -T "$threads" -d 50 -D 600 -i mouse_index/subread/subread \
     -r ${fw} -R ${rv} \
-    -o tmp.bam
+    -o tmp_${out_f}.bam
     #
     samtools sort -@ "$threads" tmp.bam > "$out_f".bam
     samtools index -@ "$threads" "$out_f".bam
     samtools stats -@ "$threads" "$out_f".bam > ${out_f}_stats
-    rm tmp.bam
+    rm tmp_${out_f}.bam
 done
 
-##----------------------------------------------
+# ##################################################
 # featureCounts
-##----------------------------------------------
+# ##################################################
+# --------------------------------------------------
+bam_dir="bam_trim"
+output="counts_gene_id.txt"
+gtf="mouse_genome/Mus_musculus.GRCm38.99.gtf"
+# --------------------------------------------------
 
+featureCounts -t exon -g gene_id -a ${gtf} \
+    -o ${output} ${bam_dir}/*.bam
 
-##----------------------------------------------
+# ##################################################
 # BigWig files to visualize by IGV
-##----------------------------------------------
+# ##################################################
+# --------------------------------------------------
+bam_dir="bam_trim"
+output_dir="bigwig"
+# --------------------------------------------------
 
-mkdir -p bw
+mkdir -p ${output_dir}
 
-for bam in ./bam/*bam ; do
-    out_f=$(echo "$bam" | sed -e "s/bam/bw/g" -e "s/sorted.bw/sorted_bin5_cpm.bw/g")
-    time bamCoverage -b $bam -o "$out_f" \
+for bam in ./${bam_dir}/*bam ; do
+    out_f=$(echo "$bam" |
+        sed -e "s#${bam_dir}/#${bigwig}/#g" \
+            -e "s/.bam$/_bin5_cpm.bw/g")
+    bamCoverage -b $bam -o "$out_f" \
     -p "$threads" \
     --binSize 5 \
     --normalizeUsing CPM
 done
 
-##----------------------------------------------
+# ##################################################
 # Multiqc
-##----------------------------------------------
+# ##################################################
 multiqc .
 
 
@@ -74,9 +95,9 @@ multiqc .
 # # past code
 # # ----------------------------------------------
 
-# ##----------------------------------------------
+# # ##################################################
 # # STAR index
-# ##----------------------------------------------
+# # ##################################################
 
 # mkdir -p mouse_index/STAR
 
@@ -87,9 +108,9 @@ multiqc .
 # --sjdbGTFfile mouse_genome/Mus_musculus.GRCm38.99.gtf \
 # --runThreadN "$threads"
 
-# ##----------------------------------------------
+# # ##################################################
 # # STAR mapping
-# ##----------------------------------------------
+# # ##################################################
 
 # R1=$(ls ./fastq/*R1*.gz)
 # R2=$(ls ./fastq/*R2*.gz)
@@ -111,9 +132,9 @@ multiqc .
 #     --outFileNamePrefix "$out_f"_
 # done
 
-# ##----------------------------------------------
+# # ##################################################
 # # Sort and index
-# ##----------------------------------------------
+# # ##################################################
 
 # for bam in ./bam/*bam ; do
 #     out_f=$(echo $bam | sed "s/\.bam/_sorted.bam/g")
@@ -122,9 +143,9 @@ multiqc .
 #     rm $bam
 # done
 
-# ##----------------------------------------------
+# # ##################################################
 # # Quantification by RSEM
-# ##----------------------------------------------
+# # ##################################################
 
 # # Index
 # mkdir -p mouse_index/RSEM/index
