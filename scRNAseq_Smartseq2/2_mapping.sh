@@ -50,16 +50,16 @@ for i in $(echo $num) ; do
     --outFileNamePrefix "$out_f"_
 done
 
-# # ##################################################
-# # Sort and index
-# # ##################################################
+# ##################################################
+# Sort and index
+# ##################################################
 
-# for bam in ./bam/*bam ; do
-#     out_f=$(echo $bam | sed "s/\.bam/_sorted.bam/g")
-#     samtools sort -@ "$threads" $bam -o "$out_f"
-#     samtools index -@ "$threads" "$out_f"
-#     rm $bam
-# done
+for bam in ./bam/*bam ; do
+    out_f=$(echo $bam | sed "s/\.bam/_sorted.bam/g")
+    samtools sort -@ "$threads" $bam -o "$out_f"
+    samtools index -@ "$threads" "$out_f"
+    rm $bam
+done
 
 # # ##################################################
 # # Quantification by RSEM
