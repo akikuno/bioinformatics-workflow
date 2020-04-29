@@ -12,7 +12,7 @@ conda config --add channels conda-forge
 ```
 conda update -y -n base conda
 conda create -y -n ngs python=3.7 anaconda wget \
-    r-base r-essentials r-tidyverse r-ggpubr \
+    r-base r-essentials r-ggpubr \
     fastqc fastp samtools bedtools multiqc \
     star rsem kallisto subread r-sleuth \
     bioconductor-deseq2 \
