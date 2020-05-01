@@ -1,9 +1,9 @@
 #!/bin/sh
 
-# http://www.informatics.jax.org/downloads/reports/index.html#go
-
-# GO Evidence Codeについて:
-# http://geneontology.org/docs/guide-go-evidence-codes/
+# ```````````````````````````````````````````````````````````````
+# MGIのRNA binding/splicingに関わる遺伝子リストと
+# 胎生致死をきたす遺伝子のリストのベン図を書く
+# ```````````````````````````````````````````````````````````````
 
 mkdir -p mgi_go/data mgi_go/gene_list
 
@@ -106,12 +106,12 @@ wc -l mgi_go/gene_list/venn_*
 # レポート用にひとつのファイルに集計
 # =================================================================
 
-true > mgi_go/resut.csv
+true > mgi_go/result.csv
 for input in mgi_go/gene_list/venn*; do
     go=$(echo "$input" | sed -e "s/.*venn_//g" -e "s/_e.*.txt//g")
     day=$(echo "$input" | sed -e "s/.*_e/e/g" -e "s/.txt//g")
     #
     cat $input |
         sed "s/^/$go,$day,/g" |
-    cat - >> mgi_go/resut.csv
+    cat - >> mgi_go/result.csv
 done
