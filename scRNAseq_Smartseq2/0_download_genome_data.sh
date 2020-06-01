@@ -1,25 +1,25 @@
 #!/bin/sh
 
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-# Download mouse genome data: mm10, GRCm38
+# Download human genome data: hg38
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-mkdir -p mouse_genome
+mkdir -p human_genome
 
 # Whole-genome sequence for STAR mapping
-wget -qP mouse_genome \
-ftp://ftp.ensembl.org/pub/release-99/fasta/mus_musculus/dna/Mus_musculus.GRCm38.dna.primary_assembly.fa.gz &&
-gzip -d mouse_genome/Mus_musculus.GRCm38.dna.primary_assembly.fa.gz &
+wget -qO - \
+ftp://ftp.ensembl.org/pub/release-100/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz |
+gzip -cd > human_genome/Homo_sapiens.GRCh38.dna.primary_assembly.fa &
 
-# cDNA for kallisto mapping
-wget -qP mouse_genome \
-ftp://ftp.ensembl.org/pub/release-99/fasta/mus_musculus/cdna/Mus_musculus.GRCm38.cdna.all.fa.gz &&
-gzip -d mouse_genome/Mus_musculus.GRCm38.cdna.all.fa.gz &
+# # cDNA for kallisto mapping
+# wget -qP human_genome \
+# ftp://ftp.ensembl.org/pub/release-99/fasta/mus_musculus/cdna/Mus_musculus.GRCm38.cdna.all.fa.gz &&
+# gzip -d mouse_genome/Mus_musculus.GRCm38.cdna.all.fa.gz &
 
 # Gene information
-wget -qP mouse_genome \
-ftp://ftp.ensembl.org/pub/release-99/gtf/mus_musculus/Mus_musculus.GRCm38.99.gtf.gz &&
-gzip -d mouse_genome/Mus_musculus.GRCm38.99.gtf.gz &
+wget -qO - \
+ftp://ftp.ensembl.org/pub/release-100/gtf/homo_sapiens/Homo_sapiens.GRCh38.100.gtf.gz |
+gzip -cd > human_genome/Homo_sapiens.GRCh38.100.gtf &
 
 wait
 
