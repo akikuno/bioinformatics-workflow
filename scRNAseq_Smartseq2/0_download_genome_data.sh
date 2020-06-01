@@ -17,9 +17,9 @@ gzip -cd > human_genome/Homo_sapiens.GRCh38.dna.primary_assembly.fa &
 # gzip -d mouse_genome/Mus_musculus.GRCm38.cdna.all.fa.gz &
 
 # Gene information
-wget -q -O - \
-ftp://ftp.ensembl.org/pub/release-100/gtf/homo_sapiens/Homo_sapiens.GRCh38.100.gtf.gz &&
-gzip -d human_genome/Homo_sapiens.GRCh38.100.gtf &
+wget -qO - \
+ftp://ftp.ensembl.org/pub/release-100/gtf/homo_sapiens/Homo_sapiens.GRCh38.100.gtf.gz |
+gzip -cd > human_genome/Homo_sapiens.GRCh38.100.gtf &
 
 wait
 
