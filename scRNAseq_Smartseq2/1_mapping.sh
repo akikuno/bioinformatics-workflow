@@ -17,13 +17,13 @@
 # STAR index
 # ##################################################
 
-mkdir -p mouse_index/STAR
+mkdir -p human_genome/human_index/STAR
 
 STAR \
 --runMode genomeGenerate \
---genomeDir mouse_index/STAR \
---genomeFastaFiles mouse_genome/Mus_musculus.GRCm38.dna.primary_assembly.fa \
---sjdbGTFfile mouse_genome/Mus_musculus.GRCm38.99.gtf \
+--genomeDir human_genome/human_index/STAR \
+--genomeFastaFiles human_genome/*.primary_assembly.fa \
+--sjdbGTFfile human_genome/*.gtf \
 --runThreadN "$threads"
 
 # ##################################################
@@ -43,7 +43,7 @@ for i in $(echo $num) ; do
     sed -e "s#.*/#bam/#g" -e "s/_R1.*//g")
     #
     time STAR --runThreadN "$threads" \
-    --genomeDir mouse_index/STAR \
+    --genomeDir human_genome/human_index/STAR \
     --readFilesIn "$fw" "$rv" \
     --readFilesCommand gunzip -c \
     --outSAMtype BAM Unsorted \
