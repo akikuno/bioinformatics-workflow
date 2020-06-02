@@ -21,12 +21,12 @@ mkdir -p counts
 bam_file=$(find . -name "*sorted.bam" -type f)
 
 time featureCounts -T "$threads" -p -t exon -g gene_name \
-    -a mouse_genome/Mus_musculus.GRCm38.99.gtf \
+    -a human_genome/*.gtf \
     -o counts/counts.txt \
     $(echo "$bam_file")
 
 cat counts/counts.txt |
 sed 1d |
-sed -e "s#_Aligned.out_sorted.bam##g" \
-    -e "s#./bam/##g" |
+sed "s#_Aligned.out_sorted.bam##g" |
+sed "s#./bam/##g" |
 cat - > counts/counts_trimmed.txt
