@@ -1,31 +1,37 @@
 
 # テストデータ「count.txt」のダウンロード
-wget https://gist.githubusercontent.com/akikuno/73882ef780dfafa5473a99cef76800fc/raw/c06b0f55652a65041ec58bce455397aa7388d314/count.txt
+wget -O - https://gist.githubusercontent.com/akikuno/73882ef780dfafa5473a99cef76800fc/raw/c06b0f55652a65041ec58bce455397aa7388d314/count.txt |
+cat > count.txt
 
 calc_rpk(){
     set /dev/stdin
     cat "${1}" |
-    sed 1d |
-    awk '{rpk=""
+    awk 'NR==1{$2=""; print $0}
+        NR>1{rpk=""
         for(i=3;i<=NF;i++){rpk=rpk" "$i/$2*1000}
         print $1, rpk}'
+    sed "s/  */\t/g" |
 }
 
 calc_scale(){
     set /dev/stdin
     cat "${1}" |
     tee temp_$$ |
-    awk '{for(i=2;i<=NF;i++) sum[i]+=$i}
+    awk 'NR==1
+        NR>1{for(i=2;i<=NF;i++) sum[i]+=$i}
         END{for(key in sum) printf " "sum[key]}' |
-    sed "s/^/sum /g" |
-    awk 'NR==1 && FNR==1{ for(i=2;i<=NF;i++){denom[i]=$i}; next} {
+    # awk '{print $0, FNR, NR , FILENAME}' - temp_$$
+    awk 'NR==1 && FNR==1
+        NR==2 && FNR==2 { for(i=1;i<=NF;i++) denom[i]=$i}
+        NR>3{
         tpm=""
         for(i=2;i<=NF;i++){
-            tpm=tpm","($i/denom[i] * 1000000)
+            tpm=tpm" "($(i)/denom[i-1] * 1000000)
             }
         print $1, tpm
-        }' - temp_$$ |
-    sed "s/ //g" |
+        }
+        ' - temp_$$ |
+    sed "s/  */\t/g" |
     cat
     rm temp_$$
 }
@@ -33,15 +39,15 @@ calc_scale(){
 cat count.txt |
     calc_rpk |
     calc_scale |
-cat > count_TPM.csv
+cat > count_TPM.txt
 
 # TPM check
-cat count_TPM.csv |
-    awk -F "," '{for(i=2;i<=NF;i++){sum[i]+=$i}}
+cat count_TPM.txt |
+    awk '{for(i=2;i<=NF;i++){sum[i]+=$i}}
     END{for(key in sum) print sum[key]}'
 
 # RPKM
 cat count.txt |
     calc_scale |
     calc_rpk |
-cat > count_RPKM.csv
+cat > count_RPKM.txt
