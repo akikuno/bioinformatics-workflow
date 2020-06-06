@@ -13,16 +13,19 @@ pacman::p_load(tidyverse)
 ## Read featureCounts data ----
 # ++++++++++++++++++++++++++++++++++++++++++++++
 
-counts <- read_tsv(input, skip = 1)
-
+counts <- read_tsv(input, skip = 1, col_types = cols())
+col_name <- colnames(counts[,-c(1:5)]) %>%
+    str_remove(".*/") %>%
+    str_remove("_Aligned.*$") %>%
+    str_c("TPM_", .)
 # ++++++++++++++++++++++++++++++++++++++++++++++
 ## Calculate TPM ----
 # ++++++++++++++++++++++++++++++++++++++++++++++
 
-df <- counts[,-c(1:5)]
-colnames(df) <- str_c("TPM_", colnames(df))
-rownames(df) <- counts[, 1]
-rpk <- df[,-1]/df[,1] * 1000
+mat <- counts[,-c(1:5)] %>% as.matrix()
+colnames(mat) <- col_name
+rownames(mat) <- pull(counts[,1])
+rpk <- mat[,-1]/mat[,1] * 1000
 tpm <- apply(rpk, 2, function(x) x/sum(x) * 1000000)
 colSums(tpm)
 
