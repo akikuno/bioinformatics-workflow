@@ -15,4 +15,3 @@ mat[is.nan(mat)] <- 0.0001
 
 result = SpectralTAD(mat, chr = "chrX", resolution = 40000, qual_filter = FALSE, z_clust = FALSE)
 write_tsv(as.data.frame(result), output)
-

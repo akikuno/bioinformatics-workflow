@@ -29,7 +29,7 @@ mat <- mat[,-1] %>% as.matrix
 rownames(mat) <-  df[,1] %>% pull
 mat[is.nan(mat)] <- 0.0001
 
-result = SpectralTAD(mat, chr = "chrX", resolution = 40000, qual_filter = FALSE, z_clust = FALSE)
+result = SpectralTAD(mat, chr = "chrX", resolution = 40000, qual_filter = TRUE, z_clust = TRUE)
 write_tsv(as.data.frame(result), output)
 EOF
 chmod +x SpectralTAD.R
@@ -41,19 +41,6 @@ inputs=$(
     grep chrX |
     grep matrix.gz
 )
-
-# outputs=$(
-#     find /mnt/d/nisimura-sensei_xi/Giorgetti_HiC/* |
-#     grep 40kb |
-#     grep iced-snpMasked |
-#     grep chrX |
-#     grep matrix.gz |
-#     sed "s#.*/##g" |
-#     sed "s/EHSNP-//g" |
-#     sed "s/__mm9-cast-129s1__genome__C-40000-iced.masked__/-/g" |
-#     sed "s/.matrix.gz/.bg/g"
-# )
-
 
 format()(
     cat - |
@@ -69,35 +56,27 @@ while read -r input; do
         sed "s#.*/##g" |
         sed "s/EHSNP-//g" |
         sed "s/__mm9-cast-129s1__genome__C-40000-iced.masked__/-/g" |
-        sed "s/.matrix.gz/.bg/g"
+        sed "s/.matrix.gz/.bedgraph/g"
     )
     echo "$output is generating..."
     gzip -dc "$input" |
-    format > test.csv
-    Rscript SpectralTAD.R test.csv "$output"
+    format > test_mat
+    Rscript SpectralTAD.R test_mat test_out
+    sed 1d test_out > "$output"
 done
-rm test.csv
-
-# awk -v inputs="$inputs" -v outputs="$outputs" \
-# 'BEGIN{split(inputs, inputs_, " ")
-#     split(outputs, outputs_, " ")
-#     for(i in inputs_) {
-#         print "echo ", outputs_[i], "is now generating..."
-#         print "Rscript SpectralTAD.R",inputs_[i], outputs_[i]
-#         }
-#     }' |
-# sh -
+rm test_*
 
 ###########################################################
 #! LIFTOVER
 ###########################################################
 
-wget http://hgdownload.cse.ucsc.edu/goldenpath/mm9/liftOver/mm9ToMm10.over.chain.gz
+wget -O - http://hgdownload.cse.ucsc.edu/goldenpath/mm9/liftOver/mm9ToMm10.over.chain.gz |
+cat > mm9ToMm10.over.chain.gz
 
-for bg in *bg; do
-output=$(echo "$bg" | sed "s/.bg/_mm10.bg/g")
+for bg in *bedgraph; do
+output=$(echo "$bg" | sed "s/.bedgraph/_mm10.bedgraph/g")
 echo $output
-cat "${bg}" | sed 1d > test.bg
-liftOver test.bg mm9ToMm10.over.chain.gz "${output}" unlifted
+# cat "${bg}" | sed 1d > test.bg
+liftOver "${bg}" mm9ToMm10.over.chain.gz "${output}" unlifted
 done
-rm test.bg unlifted
+rm unlifted
