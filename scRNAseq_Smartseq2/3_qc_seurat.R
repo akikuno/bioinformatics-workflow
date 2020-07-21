@@ -59,13 +59,12 @@ p_qc <- VlnPlot(data_qc, group.by= "celltype", features = feats, pt.size = 0.1,n
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 data_umap <- data
 
-# DefaultAssay(object = data) <- "integrated"
 # Run the standard workflow for visualization and clustering
 data_umap <- FindVariableFeatures(object = data_umap,
         selection.method = "vst", nfeatures = 2000, verbose = FALSE) %>%
-    ScaleData(object = ., verbose = FALSE) %>%
-    RunPCA(object = ., npcs = 30, verbose = FALSE) %>%
-    RunUMAP(object = ., reduction = "pca", dims = 1:30)
+    ScaleData(verbose = FALSE) %>%
+    RunPCA(npcs = 30, verbose = FALSE) %>%
+    RunUMAP(reduction = "pca", dims = 1:30)
 
 p_umap <- DimPlot(object = data_umap, reduction = "umap", group.by = "celltype",
     label = TRUE, repel = TRUE) + NoLegend()
