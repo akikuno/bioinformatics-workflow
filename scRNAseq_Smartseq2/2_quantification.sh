@@ -27,6 +27,6 @@ time featureCounts -T "$threads" -p -t exon -g gene_name \
 
 cat counts/counts.txt |
 sed 1d |
-sed "s#_Aligned.out_sorted.bam##g" |
+sed "s#_Aligned.out_sorted_sorted.bam##g" |
 sed "s#./bam/##g" |
 cat - > counts/counts_trimmed.txt
