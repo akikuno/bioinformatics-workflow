@@ -3,7 +3,7 @@
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 options(repos = "http://cran.us.r-project.org")
 if (!requireNamespace("pacman", quietly = T)) install.packages("pacman")
-pacman::p_load(tidyverse, Seurat, patchwork)
+pacman::p_load(tidyverse, scater, Seurat, patchwork)
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #! load Data
@@ -12,12 +12,12 @@ pacman::p_load(tidyverse, Seurat, patchwork)
 #==========================================================
 #? TEST Input
 #==========================================================
-pancreas.data <- readRDS(file = "~/Downloads/pancreas_v3_files/pancreas_expression_matrix.rds")
-metadata <- readRDS(file = "~/Downloads/pancreas_v3_files/pancreas_metadata.rds")
-pancreas <- CreateSeuratObject(counts = pancreas.data, meta.data = metadata)
+# pancreas.data <- readRDS(file = "~/Downloads/pancreas_v3_files/pancreas_expression_matrix.rds")
+# metadata <- readRDS(file = "~/Downloads/pancreas_v3_files/pancreas_metadata.rds")
+# pancreas <- CreateSeuratObject(counts = pancreas.data, meta.data = metadata)
 
-metadata %>% head
-class(metadata)
+# metadata %>% head
+# class(metadata)
 
 #==========================================================
 #? Input
