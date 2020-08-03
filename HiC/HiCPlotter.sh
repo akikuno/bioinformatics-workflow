@@ -1,9 +1,15 @@
 #!/bin/sh
 
 ###############################################################################
+#! Prerequisit
+###############################################################################
+# python2
+# bedtools
+
+###############################################################################
 #! Prepare software
 ###############################################################################
-git clone https://github.com/kcakdemir/HiCPlotter.git
+[ -d HiCPlotter ] || git clone https://github.com/kcakdemir/HiCPlotter.git
 
 cat << 'EOF' > transpose.awk
 {for (i=1; i<=NF; i++)  {a[NR,i] = $i};
@@ -20,12 +26,13 @@ EOF
 #! Download HiC data (size: 25.3GB)
 ###############################################################################
 
-mkdir -p GSE72697_RAW
-wget -P GSE72697_RAW -c "ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE72nnn/GSE72697/suppl/GSE72697_RAW.tar"
-tar GSE72697_RAW -xf GSE72697_RAW.tar
-mv GSM* GSE72697_RAW
-find ./ -name "*matrix_cis*tar.gz" | xargs -I @ tar -xf @
-
+if [ -f GSE72697_RAW.tar ]; then
+    mkdir -p GSE72697_RAW
+    wget -P GSE72697_RAW -c "ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE72nnn/GSE72697/suppl/GSE72697_RAW.tar"
+    tar GSE72697_RAW -xf GSE72697_RAW.tar
+    mv GSM* GSE72697_RAW
+    find ./ -name "*matrix_cis*tar.gz" | xargs -I @ tar -xf @
+fi
 
 ###############################################################################
 #! Formatting HiC matrix
@@ -55,19 +62,13 @@ done
 #! Detect genome position in HiC
 ###############################################################################
 
-# : > temp/tmp.bed
-# printf "chrX\t4720001\t8320001\tInterest\n" >> temp/tmp.bed
-# printf "chrX\t35758241\t35809632\tLAMP2\n" >> temp/tmp.bed
-# printf "chrX\t103030677\t103170536\tAtrx\n" >> temp/tmp.bed
-# cat temp/tmp.bed | sort -k 1,1 -k 2,2n > temp/genome_position.bed
-# rm temp/tmp.bed
-
-: > temp/tmp.bed
-printf "chrX\t6500001\t8000001\tTarget\n" >> temp/tmp.bed
-printf "chrX\t35000001\t36500001\tLAMP2\n" >> temp/tmp.bed
-printf "chrX\t102500000\t104000000\tAtrx\n" >> temp/tmp.bed
-cat temp/tmp.bed | sort -k 1,1 -k 2,2n > temp/genome_position.bed
-rm temp/tmp.bed
+cat << EOF |
+chrX 6000001 8000001 Target_02
+chrX 1 25000001 Target_25
+EOF
+    sed "s/ /\t/g" |
+    sort -k 1,1 -k 2,2n |
+cat > temp/genome_position.bed
 
 head -n 1 temp/ESC_129s1.matrix |
     sed "s/ /\n/g" |
@@ -81,13 +82,13 @@ head -n 1 temp/ESC_129s1.matrix |
 cat > temp/matrix.bed
 
 bedtools intersect -wb -b temp/genome_position.bed -a temp/matrix.bed |
-awk '{print $8,$4,$4}' |
-awk '{if(min[$1] == "") min[$1]="inf"
-if(min[$1]>$2) min[$1]=$2
-if(max[$1]<$3) max[$1]=$3}
-END{for(key in min){
-    print key, min[key], max[key]
-}}' |
+    awk '{print $8,$4,$4}' |
+    awk '{if(min[$1] == "") min[$1]="inf"
+        if(min[$1]>$2) min[$1]=$2
+        if(max[$1]<$3) max[$1]=$3}
+        END{for(key in min){
+            print key, min[key], max[key]
+        }}' |
 cat > temp/target_loci.bed
 
 ###############################################################################
