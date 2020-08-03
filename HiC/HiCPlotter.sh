@@ -101,9 +101,8 @@ mkdir -p plot
 #? All ChrX
 #==============================================================================
 
-for input in $(find . -type d -name *iced-snpMasked* | grep txt | grep 40kb | grep -v deltaFT)
+for output in $(find temp/*matrix | cut -d "_" -f 1 | cut -d "-" -f 1 | sed "s#.*/##g" | sort -u)
 do
-    output=$(echo ${input} | sed "s/__/\t/g" | cut -f 4 | cut -d "/" -f 1)
     echo "${output} $1 is now processing..."
 
     python2 HiCPlotter/HiCPlotter.py \
@@ -125,9 +124,8 @@ wait 2>/dev/null
 cat temp/target_loci.bed |
 while read -r line; do
     set ${line}
-    for input in $(find . -type d -name *iced-snpMasked* | grep txt | grep 40kb | grep -v deltaFT)
+    for output in $(find temp/*matrix | cut -d "_" -f 1 | cut -d "-" -f 1 | sed "s#.*/##g" | sort -u)
     do
-        output=$(echo ${input} | sed "s/__/\t/g" | cut -f 4 | cut -d "/" -f 1)
         echo "${output} $1 is now processing..."
 
         python2 HiCPlotter/HiCPlotter.py \
