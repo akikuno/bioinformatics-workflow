@@ -116,11 +116,6 @@ wait 2>/dev/null
 #? Plot selected gene loci
 #==============================================================================
 
-# cat << EOF |
-# Target 164 201
-# Lamp2 886 906
-# Atrx 2569 2589
-# EOF
 cat temp/target_loci.bed |
 while read -r line; do
     set ${line}
