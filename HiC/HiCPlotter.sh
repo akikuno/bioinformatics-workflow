@@ -64,7 +64,7 @@ done
 
 cat << EOF |
 chrX 6000001 8000001 Target_02
-chrX 1 25000001 Target_25
+chrX 4000000 24000001 Target_20
 EOF
     sed "s/ /\t/g" |
     sort -k 1,1 -k 2,2n |
