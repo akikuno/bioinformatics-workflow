@@ -1,26 +1,15 @@
 #!/bin/sh
 
 ###############################################################################
-#! Prerequisit
+#! Prerequisits
 ###############################################################################
-# python2
+# Python 2.7
 # bedtools
 
 ###############################################################################
-#! Prepare software
+#! Download HiCPlotter
 ###############################################################################
 [ -d HiCPlotter ] || git clone https://github.com/kcakdemir/HiCPlotter.git
-
-cat << 'EOF' > transpose.awk
-{for (i=1; i<=NF; i++)  {a[NR,i] = $i};
-} NF>p { p = NF }
-END {for(j=1; j<=p; j++) {
-        str=a[1,j];
-        for(i=2; i<=NR; i++){str=str" "a[i,j]}
-        print str
-    }
-}
-EOF
 
 ###############################################################################
 #! Download HiC data (size: 25.3GB)
@@ -39,6 +28,17 @@ fi
 ###############################################################################
 
 mkdir -p temp/
+
+cat << 'EOF' > transpose.awk
+{for (i=1; i<=NF; i++)  {a[NR,i] = $i};
+} NF>p { p = NF }
+END {for(j=1; j<=p; j++) {
+        str=a[1,j];
+        for(i=2; i<=NR; i++){str=str" "a[i,j]}
+        print str
+    }
+}
+EOF
 
 for input in $(find . -type d -name *iced-snpMasked* | grep txt | grep 40kb); do
     output=$(echo ${input} | sed "s/__/\t/g" | cut -f 4 | cut -d "/" -f 1)
