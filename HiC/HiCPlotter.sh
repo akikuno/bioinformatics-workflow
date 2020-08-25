@@ -125,13 +125,46 @@ while read -r line; do
 
         python2 HiCPlotter/HiCPlotter.py \
             -f temp/"${output}"_cast.matrix temp/"${output}"_129s1.matrix \
-            -n "Cast(Xa)" "129s1(Xi)" -chr chrX -o plot/${output}_"${1}"_"${2}"_"${3}"_LOG2 \
+            -n "Cast(Xa)" "129s1(Xa)" -chr chrX -o plot/${output}_"${1}"_"${2}"_"${3}"_LOG2 \
             -r 40000 -c 1 -s $2 -e $3 &
 
         python2 HiCPlotter/HiCPlotter.py \
             -f temp/"${output}"_cast.matrix temp/"${output}"_129s1.matrix \
             -n "Cast(Xa)" "129s1(Xi)" -chr chrX -o plot/${output}_"${1}"_"${2}"_"${3}"_TAD \
             -r 40000 -c 1 -s $2 -e $3 -ptd 1 -pi 1 &
+    done 2>/dev/null
+    wait 2>/dev/null
+done
+
+
+#==============================================================================
+#? Plot selected gene loci with different window size
+#==============================================================================
+
+cat temp/target_loci.bed |
+grep Target_02 |
+while read -r line; do
+    set ${line}
+    for output in $(find temp/*matrix | cut -d "_" -f 1 | cut -d "-" -f 1 | sed "s#.*/##g" | sort -u)
+    do
+        # for window in 2 4 8 16 32 64 128 256 512 1024 2084 4168; do
+        for window in $(awk 'BEGIN{for(i=11;i<=20;i++) print i}'); do
+        echo "${output} ${window} $1 is now processing..."
+
+        # python2 HiCPlotter/HiCPlotter.py \
+        #     -f temp/"${output}"_cast.matrix temp/"${output}"_129s1.matrix \
+        #     -n "Cast(Xa)" "129s1(Xa)" -chr chrX \
+        #     -o plot/${output}_"${1}"_"${2}"_"${3}"_LOG2 \
+        #     -r 40000 -c 1 -s $2 -e $3 &
+
+        python2 HiCPlotter/HiCPlotter.py \
+            -f temp/"${output}"_cast.matrix temp/"${output}"_129s1.matrix \
+            -n "Cast(Xa)" "129s1(Xi)" \
+            -chr chrX \
+            -w "${window}" \
+            -o plot/${output}_${window}_"${1}"_"${2}"_"${3}"_TAD \
+            -r 40000 -c 1 -s $2 -e $3 -ptd 1 -pi 1 &
+        done
     done 2>/dev/null
     wait 2>/dev/null
 done
