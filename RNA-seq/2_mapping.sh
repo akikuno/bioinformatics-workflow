@@ -27,37 +27,41 @@ subread-buildindex \
 # Subread mapping
 # ##################################################
 # --------------------------------------------------
-input_label="trim"
-output_dir="bam_trim"
+output_dir="bam"
 # --------------------------------------------------
 mkdir -p ${output_dir}
 
 R1=$(ls ./fastq/*R1*.gz)
 R2=$(ls ./fastq/*R2*.gz)
-num=$(find ./fastq/*R1*.gz -type f | awk '{print NR}')
 
-for i in $(echo $num) ; do
-    fw=$(echo $R1 | cut -d " " -f $i)
-    rv=$(echo $R2 | cut -d " " -f $i)
+
+find ./fastq/*R1*.gz -type f |
+awk '{print NR}' |
+while read -r i; do
+    fw=$(echo $R1 | cut -d " " -f "$i")
+    rv=$(echo $R2 | cut -d " " -f "$i")
     out_f=$(echo "$fw" |
-    sed -e "s#.*/#bam/#g" -e "s/_R1.*/${input_label}/g")
-    #
+    sed -e "s#.*/#bam/#g" -e "s/_R1.*//g")
     echo "${out_f} is now processing..."
-    subread-align -t 0 -T "$threads" -d 50 -D 600 -i mouse_index/subread/subread \
+    #
+    subread-align -t 0 \
+    -T "$threads" \
+    -d 50 -D 600 \
+    -i mouse_index/subread/subread \
     -r ${fw} -R ${rv} \
-    -o tmp_${out_f}.bam
+    -o tmp.bam
     #
     samtools sort -@ "$threads" tmp.bam > "$out_f".bam
     samtools index -@ "$threads" "$out_f".bam
     samtools stats -@ "$threads" "$out_f".bam > ${out_f}_stats
-    rm tmp_${out_f}.bam
+    rm tmp.bam
 done
 
 # ##################################################
 # featureCounts
 # ##################################################
 # --------------------------------------------------
-bam_dir="bam_trim"
+bam_dir="bam"
 output="counts_gene_id.txt"
 gtf="mouse_genome/Mus_musculus.GRCm38.99.gtf"
 # --------------------------------------------------
@@ -69,7 +73,7 @@ featureCounts -t exon -g gene_id -a ${gtf} \
 # BigWig files to visualize by IGV
 # ##################################################
 # --------------------------------------------------
-bam_dir="bam_trim"
+bam_dir="bam"
 output_dir="bigwig"
 # --------------------------------------------------
 

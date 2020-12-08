@@ -12,12 +12,12 @@ pacman::p_load(tidyverse, Seurat, patchwork, tidyseurat)
 #==========================================================
 #? TEST Input
 #==========================================================
-pancreas.data <- readRDS(file = "~/Downloads/pancreas_v3_files/pancreas_expression_matrix.rds")
-metadata <- readRDS(file = "~/Downloads/pancreas_v3_files/pancreas_metadata.rds")
-pancreas <- CreateSeuratObject(counts = pancreas.data, meta.data = metadata)
+# pancreas.data <- readRDS(file = "~/Downloads/pancreas_v3_files/pancreas_expression_matrix.rds")
+# metadata <- readRDS(file = "~/Downloads/pancreas_v3_files/pancreas_metadata.rds")
+# pancreas <- CreateSeuratObject(counts = pancreas.data, meta.data = metadata)
 
-metadata %>% head
-class(metadata)
+# metadata %>% head
+# class(metadata)
 
 #==========================================================
 #? Input
