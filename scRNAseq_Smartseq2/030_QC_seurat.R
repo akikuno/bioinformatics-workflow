@@ -10,25 +10,13 @@ pacman::p_load(tidyverse, Seurat, patchwork, tidyseurat)
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 #==========================================================
-#? TEST Input
-#==========================================================
-# pancreas.data <- readRDS(file = "~/Downloads/pancreas_v3_files/pancreas_expression_matrix.rds")
-# metadata <- readRDS(file = "~/Downloads/pancreas_v3_files/pancreas_metadata.rds")
-# pancreas <- CreateSeuratObject(counts = pancreas.data, meta.data = metadata)
-
-# metadata %>% head
-# class(metadata)
-
-#==========================================================
 #? Input
 #==========================================================
 
-data <- read_tsv("counts/counts_trimmed.txt")
-colnames(data) %>% head(10)
+data <- read_tsv("counts/counts.txt")
 
 data_mat <- data[, -c(1:6)] %>% as.matrix
 rownames(data_mat) <- data[, 1] %>% pull(Geneid)
-
 
 data_meta <- data.frame(
     id = colnames(data_mat),
@@ -39,14 +27,12 @@ data_meta <- data_meta %>% select(-id)
 
 
 data <- CreateSeuratObject(counts = data_mat, meta.data = data_meta)
-data
-levels(data)
+
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #! QC
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 data_qc <- data
-# Way1: Doing it using Seurat function
 data_qc <- PercentageFeatureSet(data_qc, "^MT-", col.name = "percent_mito")
 data_qc <- PercentageFeatureSet(data_qc, "^RP[SL]", col.name = "percent_ribo")
 
@@ -92,7 +78,19 @@ p_pca <- DimPlot(object = data_pca, reduction = "pca", group.by = "celltype",
 
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-#! Save figure
+#! Outputs
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-ggsave((p_qc) / (p_umap + p_pca), filename = "qc_umap_pca.png", width = 10, height = 7)
+ggsave((p_qc) / (p_umap + p_pca), filename = "results/qc_umap_pca.png", width = 10, height = 7)
+
+data_qc <- subset(data_qc,
+    subset = nFeature_RNA > 200 &
+            percent_mito < 20)
+
+data_qc <- NormalizeData(data_qc, normalization.method = "LogNormalize", scale.factor = 10000)
+
+data_qc[["RNA"]]@data %>%
+    as.data.frame() %>%
+    rownames_to_column("gene_symbol") %>%
+    as_tibble %>%
+    write_csv("results/counts_normalized.csv")

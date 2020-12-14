@@ -22,11 +22,13 @@ bam_file=$(find . -name "*sorted.bam" -type f)
 
 time featureCounts -T "$threads" -p -t exon -g gene_name \
     -a human_genome/*.gtf \
-    -o counts/counts.txt \
+    -o tmp_counts \
     $(echo "$bam_file")
 
-cat counts/counts.txt |
+cat tmp_counts |
 sed 1d |
 sed "s#_Aligned.out_sorted_sorted.bam##g" |
 sed "s#./bam/##g" |
-cat - > counts/counts_trimmed.txt
+cat - > counts/counts.txt
+
+rm tmp_counts
