@@ -1,8 +1,9 @@
 #!/bin/sh
 
-# ##################################################
+###############################################################################
 # Define threads
-# ##################################################
+###############################################################################
+
 # Linux and similar...
 [ -z "$threads" ] && threads=$(getconf _NPROCESSORS_ONLN 2>/dev/null | awk '{print int($0/2)}')
 # FreeBSD and similar...
@@ -12,86 +13,79 @@
 # Give up...
 [ -z "$threads" ] && threads=1
 
-# ##################################################
-# Subread index
-# ##################################################
-# --------------------------------------------------
-output_dir="mouse_index/subread"
-# --------------------------------------------------
-mkdir -p ${output_dir}
+###############################################################################
+# Genome indexing by Subread
+###############################################################################
+
+mkdir -p "mouse_index/subread"
+
 subread-buildindex \
-    -o ${output_dir}/subread \
-    mouse_genome/Mus_musculus.GRCm38.dna.primary_assembly.fa
+  -o mouse_index/subread/subread \
+  mouse_genome/Mus_musculus.GRCm38.dna.primary_assembly.fa
 
-# ##################################################
-# Subread mapping
-# ##################################################
-# --------------------------------------------------
-output_dir="bam"
-# --------------------------------------------------
-mkdir -p ${output_dir}
+###############################################################################
+# Mapping to genome by Subread
+###############################################################################
 
-R1=$(ls ./fastq/*R1*.gz)
-R2=$(ls ./fastq/*R2*.gz)
+mkdir -p "bam"
 
+FQ1=$(ls ./fastq/*1*)
+FQ2=$(ls ./fastq/*2*)
 
-find ./fastq/*R1*.gz -type f |
+find ./fastq/ -type f |
 awk '{print NR}' |
 while read -r i; do
-    fw=$(echo $R1 | cut -d " " -f "$i")
-    rv=$(echo $R2 | cut -d " " -f "$i")
-    out_f=$(echo "$fw" |
-    sed -e "s#.*/#bam/#g" -e "s/_R1.*//g")
-    echo "${out_f} is now processing..."
-    #
-    subread-align -t 0 \
-    -T "$threads" \
-    -d 50 -D 600 \
+  fw=$(echo $FQ1 | cut -d " " -f "$i")
+  rv=$(echo $FQ2 | cut -d " " -f "$i")
+  out_f=$(echo "${fw##.*/}" | cut -d "_" -f 1)
+  echo "${out_f} is now processing..."
+  #
+  subread-align -t 0 \
+    -T "${threads:-1}" \
     -i mouse_index/subread/subread \
     -r ${fw} -R ${rv} \
     -o tmp.bam
-    #
-    samtools sort -@ "$threads" tmp.bam > "$out_f".bam
-    samtools index -@ "$threads" "$out_f".bam
-    samtools stats -@ "$threads" "$out_f".bam > ${out_f}_stats
-    rm tmp.bam
+  #
+  samtools sort -@ "$threads" tmp.bam > bam/"$out_f".bam
+  samtools index -@ "$threads" bam/"$out_f".bam
+  samtools stats -@ "$threads" bam/"$out_f".bam > bam/"${out_f}"_stats
+  rm tmp.bam
 done
 
-# ##################################################
-# featureCounts
-# ##################################################
-# --------------------------------------------------
-bam_dir="bam"
-output="counts_gene_id.txt"
-gtf="mouse_genome/Mus_musculus.GRCm38.99.gtf"
-# --------------------------------------------------
+###############################################################################
+# Counting reads to genomic features by featureCounts
+###############################################################################
 
-featureCounts -t exon -g gene_id -a ${gtf} \
-    -o ${output} ${bam_dir}/*.bam
+mkdir -p count
 
-# ##################################################
+gtf="$(find mouse_genome/*gtf)"
+
+featureCounts -t exon -g gene_name -a "$gtf" \
+  -o count/count_gene_name.txt bam/*.bam
+
+mv count/counts_gene_name.txt count/count_gene_name.txt
+
+gzip -c count/count_gene_name.txt > count/count_gene_name.txt.gz
+
+###############################################################################
 # BigWig files to visualize by IGV
-# ##################################################
-# --------------------------------------------------
-bam_dir="bam"
-output_dir="bigwig"
-# --------------------------------------------------
+###############################################################################
 
-mkdir -p ${output_dir}
+mkdir -p "bigwig"
 
-for bam in ./${bam_dir}/*bam ; do
-    out_f=$(echo "$bam" |
-        sed -e "s#${bam_dir}/#${bigwig}/#g" \
-            -e "s/.bam$/_bin5_cpm.bw/g")
-    bamCoverage -b $bam -o "$out_f" \
-    -p "$threads" \
-    --binSize 5 \
-    --normalizeUsing CPM
+for bam in bam/*bam ; do
+  out_f=$(echo "$bam" |
+    sed "s|bam/|bigwig/|" |
+    sed "s/.bam$/_bin5_cpm.bw/g")
+  
+  bamCoverage -b "$bam" -o "$out_f" -p "$threads" \
+  --binSize 5 --normalizeUsing CPM
 done
 
-# ##################################################
+###############################################################################
 # Multiqc
-# ##################################################
+###############################################################################
+
 multiqc .
 
 
