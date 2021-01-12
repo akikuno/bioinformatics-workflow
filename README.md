@@ -15,13 +15,11 @@ conda config --add channels conda-forge
 ```bash
 if [ $(conda info -e | cut -d " " -f 1 | grep -c "ngs$") -eq 0 ] ; then
 conda update -y -n base conda
-conda create -y -n ngs python=3.9 wget \
+conda create -y -n ngs python=3.8 wget \
   sra-tools fastqc fastp qualimap multiqc \
   samtools bedtools deeptools \
   star subread bwa macs2 homer \
-  r-base r-essentials r-ggpubr \
-  r-seurat bioconductor-deseq2 \
-  bioconductor-chippeakanno bioconductor-diffbind
+  r-base r-essentials
 fi
 ```
 
