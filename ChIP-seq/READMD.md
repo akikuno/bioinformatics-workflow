@@ -13,15 +13,15 @@ conda config --add channels conda-forge
 
 ```bash
 conda info -e | grep -q "ngs$" || conda create -y -n ngs
-conda install -y -n ngs -c conda-forge r-base r-essentials
-conda install -y -n ngs -c bioconda homer bioconductor-chippeakanno bioconductor-chipseeker
+conda install -y -n ngs -c conda-forge r-base r-essentials r-biocmanager
+conda install -y -n ngs -c bioconda homer
 ```
 
 ```bash
 PATH_HOMER=$(
   type homer |
   awk '{print $NF}' |
-  sed "s|/bin/|/share/|"
+  sed "s|/bin/|/share/"
 )
 
 $PATH_HOMER/configureHomer.pl -install mm10 hg38
