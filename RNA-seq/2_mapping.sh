@@ -27,59 +27,39 @@ subread-buildindex \
 # Mapping to genome by Subread
 ###############################################################################
 
-mkdir -p "bam"
-
-FQ1=$(ls ./fastq/*1*)
-FQ2=$(ls ./fastq/*2*)
+mkdir -p bam
 
 find ./fastq/ -type f |
-awk '{print NR}' |
-while read -r i; do
-  fw=$(echo $FQ1 | cut -d " " -f "$i")
-  rv=$(echo $FQ2 | cut -d " " -f "$i")
-  out_f=$(echo "${fw##.*/}" | cut -d "_" -f 1)
-  echo "${out_f} is now processing..."
-  #
-  subread-align -t 0 \
-    -T "${threads:-1}" \
-    -i mouse_index/subread/subread \
-    -r ${fw} -R ${rv} \
-    -o tmp.bam
-  #
-  samtools sort -@ "$threads" tmp.bam > bam/"$out_f".bam
-  samtools index -@ "$threads" bam/"$out_f".bam
-  samtools stats -@ "$threads" bam/"$out_f".bam > bam/"${out_f}"_stats
-  rm tmp.bam
-done
+  sort |
+  awk 'NR%2==1 {printf $0" "; next}1' |
+  while read -r R1 R2; do
+    out_prefix="$(basename ${R1%%_R*})"
 
-###############################################################################
-# Counting reads to genomic features by featureCounts
-###############################################################################
-
-mkdir -p count
-
-gtf="$(find mouse_genome/*gtf)"
-
-featureCounts -t exon -g gene_name -a "$gtf" \
-  -o count/count_gene_name.txt bam/*.bam
-
-mv count/counts_gene_name.txt count/count_gene_name.txt
-
-gzip -c count/count_gene_name.txt > count/count_gene_name.txt.gz
+    subread-align -t 0 \
+      -T "${threads:-1}" \
+      -i mouse_index/subread/subread \
+      -r "$R1" -R "$R2" \
+      -o bam/tmp.bam
+    #
+    samtools sort -@ "$threads" bam/tmp.bam >bam/"$out_prefix".bam
+    samtools index -@ "$threads" bam/"$out_prefix".bam
+    samtools stats -@ "$threads" bam/"$out_prefix".bam >bam/"$out_prefix"_stats
+    rm bam/tmp.bam*
+  done
 
 ###############################################################################
 # BigWig files to visualize by IGV
 ###############################################################################
 
-mkdir -p "bigwig"
+mkdir -p bigwig
 
-for bam in bam/*bam ; do
+for bam in bam/*bam; do
   out_f=$(echo "$bam" |
     sed "s|bam/|bigwig/|" |
     sed "s/.bam$/_bin5_cpm.bw/g")
-  
+
   bamCoverage -b "$bam" -o "$out_f" -p "$threads" \
-  --binSize 5 --normalizeUsing CPM
+    --binSize 5 --normalizeUsing CPM
 done
 
 ###############################################################################
@@ -87,7 +67,6 @@ done
 ###############################################################################
 
 multiqc .
-
 
 # # ----------------------------------------------
 # # past code
