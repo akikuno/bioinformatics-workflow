@@ -34,7 +34,7 @@ find ./fastq/ -type f |
   awk 'NR%2==1 {printf $0" "; next}1' |
   while read -r R1 R2; do
     out_prefix="$(basename ${R1%%_R*})"
-
+    #
     subread-align -t 0 \
       -T "${threads:-1}" \
       -i mouse_index/subread/subread \

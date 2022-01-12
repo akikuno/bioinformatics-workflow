@@ -1,8 +1,8 @@
 ###############################################################################
 # Input arguments
 ###############################################################################
-file <- "count/count_gene_name.txt"
-sample_name <- c("hetero-1", "hetero-2", "hetero-3", "ko-1", "ko-2", "ko-3")
+file <- "count/count_gene_name.txt.gz"
+sample_name <- c("ko-1", "ko-2", "ko-3", "wt-1", "wt-2", "wt-3")
 group <- c(1, 1, 1, 2, 2, 2)
 qval <- 0.05
 
