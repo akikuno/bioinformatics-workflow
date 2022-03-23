@@ -4,30 +4,24 @@
 # Define threads
 ###############################################################################
 
-# Linux and similar...
-[ -z "$threads" ] && threads=$(getconf _NPROCESSORS_ONLN 2>/dev/null | awk '{print int($0/2)}')
-# FreeBSD and similar...
-[ -z "$threads" ] && threads=$(getconf NPROCESSORS_ONLN | awk '{print int($0/2)}')
-# Solaris and similar...
-[ -z "$threads" ] && threads=$(ksh93 -c 'getconf NPROCESSORS_ONLN' | awk '{print int($0/2)}')
-# Give up...
+[ -z "$threads" ] && threads=$(getconf _NPROCESSORS_ONLN 2>/dev/null | awk '{print int($0) - 1}')
 [ -z "$threads" ] && threads=1
 
 ###############################################################################
 # Genome indexing by Subread
 ###############################################################################
 
-mkdir -p "mouse_index/subread"
+mkdir -p data/mouse_index/subread
 
-subread-buildindex \
-  -o mouse_index/subread/subread \
-  mouse_genome/Mus_musculus.GRCm38.dna.primary_assembly.fa
+time subread-buildindex \
+  -o data/mouse_index/subread/subread \
+  data/mouse_genome/Mus_musculus.GRCm38.dna.primary_assembly.fa
 
 ###############################################################################
 # Mapping to genome by Subread
 ###############################################################################
 
-mkdir -p bam
+mkdir -p data/bam
 
 find ./fastq/ -type f |
   sort |
@@ -37,21 +31,21 @@ find ./fastq/ -type f |
     #
     subread-align -t 0 \
       -T "${threads:-1}" \
-      -i mouse_index/subread/subread \
+      -i data/mouse_index/subread/subread \
       -r "$R1" -R "$R2" \
-      -o bam/tmp.bam
+      -o data/bam/tmp.bam
     #
-    samtools sort -@ "$threads" bam/tmp.bam >bam/"$out_prefix".bam
-    samtools index -@ "$threads" bam/"$out_prefix".bam
-    samtools stats -@ "$threads" bam/"$out_prefix".bam >bam/"$out_prefix"_stats
-    rm bam/tmp.bam*
+    samtools sort -@ "$threads" data/bam/tmp.bam >data/bam/"$out_prefix".bam
+    samtools index -@ "$threads" data/bam/"$out_prefix".bam
+    samtools stats -@ "$threads" data/bam/"$out_prefix".bam >data/bam/"$out_prefix"_stats
+    rm data/bam/tmp.bam*
   done
 
 ###############################################################################
 # BigWig files to visualize by IGV
 ###############################################################################
 
-mkdir -p bigwig
+mkdir -p data/bigwig
 
 for bam in bam/*bam; do
   out_f=$(echo "$bam" |
@@ -76,13 +70,13 @@ multiqc .
 # # STAR index
 # # ##################################################
 
-# mkdir -p mouse_index/STAR
+# mkdir -p data/mouse_index/STAR
 
 # STAR \
 # --runMode genomeGenerate \
-# --genomeDir mouse_index/STAR \
-# --genomeFastaFiles mouse_genome/Mus_musculus.GRCm38.dna.primary_assembly.fa \
-# --sjdbGTFfile mouse_genome/Mus_musculus.GRCm38.99.gtf \
+# --genomeDir data/mouse_index/STAR \
+# --genomeFastaFiles data/mouse_genome/Mus_musculus.GRCm38.dna.primary_assembly.fa \
+# --sjdbGTFfile data/mouse_genome/Mus_musculus.GRCm38.99.gtf \
 # --runThreadN "$threads"
 
 # # ##################################################
@@ -102,7 +96,7 @@ multiqc .
 #     sed -e "s#.*/#bam/#g" -e "s/_R1.*//g")
 #     #
 #     time STAR --runThreadN "$threads" \
-#     --genomeDir mouse_index/STAR \
+#     --genomeDir data/mouse_index/STAR \
 #     --readFilesIn "$fw" "$rv" \
 #     --readFilesCommand gunzip -c \
 #     --outSAMtype BAM Unsorted \
@@ -125,13 +119,13 @@ multiqc .
 # # ##################################################
 
 # # Index
-# mkdir -p mouse_index/RSEM/index
+# mkdir -p data/mouse_index/RSEM/index
 # rsem-prepare-reference \
 # --star \
-# --gtf mouse_genome/Mus_musculus.GRCm38.99.gtf \
+# --gtf data/mouse_genome/Mus_musculus.GRCm38.99.gtf \
 # --num-threads "$threads" \
-# mouse_genome/Mus_musculus.GRCm38.dna.primary_assembly.fa \
-# mouse_index/RSEM/index
+# data/mouse_genome/Mus_musculus.GRCm38.dna.primary_assembly.fa \
+# data/mouse_index/RSEM/index
 
 # # Quantification
 # fastqs="fastq fastq_trim"
@@ -162,7 +156,7 @@ multiqc .
 #         --star \
 #         --output-genome-bam \
 #         /tmp/R1* /tmp/R2* \
-#         mouse_index/RSEM/index \
+#         data/mouse_index/RSEM/index \
 #         ${out_f}
 #     done
 # done
