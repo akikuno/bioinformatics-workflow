@@ -4,11 +4,11 @@
 # Counting reads to genomic features by featureCounts
 ###############################################################################
 
-mkdir -p count
+mkdir -p reports
 
-gtf="$(find mouse_genome/*gtf)"
+gtf="$(find data/mouse_genome/*gtf)"
 
 featureCounts -t exon -g gene_name -a "$gtf" \
-  -o count/count_gene_name.txt bam/*.bam
+  -o reports/count_gene_name.txt data/bam/*.bam
 
-gzip -c count/count_gene_name.txt >count/count_gene_name.txt.gz
+gzip -c reports/raw_gene_counts_matrix.txt >reports/raw_gene_counts_matrix.txt.gz

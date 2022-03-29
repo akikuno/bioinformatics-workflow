@@ -23,7 +23,7 @@ time subread-buildindex \
 
 mkdir -p data/bam
 
-find ./fastq/ -type f |
+find data/fastq/ -type f |
   sort |
   awk 'NR%2==1 {printf $0" "; next}1' |
   while read -r R1 R2; do
