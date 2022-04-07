@@ -4,6 +4,7 @@ mkdir -p data/fastq reports
 
 find . -type f |
     grep -e fastq -e fq |
+    grep -v ".sh" |
     sed "s|_S.*||" |
     sort -u |
     while read -r line; do
@@ -14,4 +15,13 @@ find . -type f |
 
 ## MD5
 
-md5sum data/fastq/*.fq.gz >reports/md5_fastq.txt
+md5sum data/fastq/*.fq.gz |
+    awk '{
+        sub(".*/", "", $2)
+        print $2","$1
+    }' >reports/md5_fastq.csv
+
+cat reports/md5_fastq.csv |
+    cut -d, -f1 |
+    paste - - |
+    awk '{print $1","$2}' >reports/pair_fastq.csv
